@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare - Médecins</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>MediCare</h1>
+                </div>
+                
+                <nav class="nav">
+                    <ul>
+                        <li><a href="/dashboard.html" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </a></li>
+                        <li><a href="/patients.html" class="nav-link">
+                            <i class="fas fa-users"></i> Patients
+                        </a></li>
+                        <li><a href="/rendezvous.html" class="nav-link">
+                            <i class="fas fa-calendar"></i> Rendez-vous
+                        </a></li>
+                        <li><a href="/consultations.html" class="nav-link">
+                            <i class="fas fa-stethoscope"></i> Consultations
+                        </a></li>
+                        <li><a href="/medecins.html" class="nav-link active">
+                            <i class="fas fa-user-md"></i> Médecins
+                        </a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Chargement...</span>
+                        <span class="user-role" id="userRole">Chargement...</span>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-logout" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1><i class="fas fa-user-md"></i> Gestion des médecins</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="showAddMedecinModal()">
+                        <i class="fas fa-plus"></i> Nouveau médecin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtres et recherche -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="search-form">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" 
+                                       placeholder="Rechercher par nom, spécialité..." 
+                                       onkeyup="searchMedecins()">
+                                <button class="btn btn-secondary" onclick="searchMedecins()">
+                                    <i class="fas fa-search"></i> Rechercher
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des médecins -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i> 
+                        Liste des médecins 
+                        <span class="badge badge-primary" id="medecinCount">0</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="medecinsContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Chargement des médecins...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal d'ajout/modification de médecin -->
+    <div id="medecinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-user-plus"></i> Nouveau médecin
+                </h3>
+                <button class="modal-close" onclick="closeMedecinModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="medecinForm">
+                    <input type="hidden" id="medecinId">
+                    
+                    <div class="form-group">
+                        <label for="nom" class="form-label">Nom *</label>
+                        <input type="text" id="nom" name="nom" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specialite" class="form-label">Spécialité</label>
+                        <select id="specialite" name="specialite" class="form-control">
+                            <option value="">Sélectionner une spécialité</option>
+                            <option value="Cardiologie">Cardiologie</option>
+                            <option value="Dermatologie">Dermatologie</option>
+                            <option value="Gynécologie">Gynécologie</option>
+                            <option value="Pédiatrie">Pédiatrie</option>
+                            <option value="Radiologie">Radiologie</option>
+                            <option value="Médecine générale">Médecine générale</option>
+                            <option value="Neurologie">Neurologie</option>
+                            <option value="Ophtalmologie">Ophtalmologie</option>
+                            <option value="ORL">ORL</option>
+                            <option value="Psychiatrie">Psychiatrie</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telephone" class="form-label">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <textarea id="adresse" name="adresse" class="form-control" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="mot_de_passe" class="form-label">Mot de passe *</label>
+                        <input type="password" id="mot_de_passe" name="mot_de_passe" class="form-control" required>
+                        <small style="color: var(--gray-color);">Laissez vide pour conserver le mot de passe actuel</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeMedecinModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveMedecin()">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i> Confirmation de suppression
+                </h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le médecin <strong id="deleteMedecinName"></strong> ?</p>
+                <p class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Cette action est irréversible.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDeleteMedecin()">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion de la session
+        let sessionId = localStorage.getItem('medicare_session') || null;
+        let medecins = [];
+        let deleteMedecinId = null;
+
+        // Vérifier la connexion
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.user) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                updateUserInterface(data.user);
+                loadMedecins();
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Mettre à jour l'interface utilisateur
+        function updateUserInterface(user) {
+            document.getElementById('userName').textContent = user.nom;
+            document.getElementById('userRole').textContent = user.role;
+        }
+
+        // Charger les médecins
+        async function loadMedecins(search = '') {
+            try {
+                const response = await fetch(`/api/medecins${search ? '?search=' + encodeURIComponent(search) : ''}`, {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                medecins = await response.json();
+                displayMedecins(medecins);
+            } catch (error) {
+                document.getElementById('medecinsContainer').innerHTML = 
+                    '<div class="alert alert-error">Erreur de chargement des médecins</div>';
+            }
+        }
+
+        // Afficher les médecins
+        function displayMedecins(medecinsList) {
+            const container = document.getElementById('medecinsContainer');
+            document.getElementById('medecinCount').textContent = medecinsList.length;
+            
+            if (medecinsList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center" style="padding: 3rem;">
+                        <i class="fas fa-user-md" style="font-size: 4rem; color: var(--gray-color); margin-bottom: 1rem;"></i>
+                        <h4>Aucun médecin trouvé</h4>
+                        <p style="color: var(--gray-color);">Commencez par ajouter un nouveau médecin.</p>
+                        <button class="btn btn-primary" onclick="showAddMedecinModal()">
+                            <i class="fas fa-plus"></i> Ajouter un médecin
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = `
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Spécialité</th>
+                                <th>Contact</th>
+                                <th>Adresse</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${medecinsList.map(medecin => `
+                                <tr>
+                                    <td>
+                                        <strong>${medecin.nom}</strong>
+                                        <br><small class="text-muted">${medecin.email}</small>
+                                    </td>
+                                    <td>
+                                        ${medecin.specialite ? 
+                                            `<span class="badge badge-primary">${medecin.specialite}</span>` : 
+                                            '<span class="text-muted">Non spécifiée</span>'}
+                                    </td>
+                                    <td>
+                                        ${medecin.telephone ? `<div><i class="fas fa-phone"></i> ${medecin.telephone}</div>` : ''}
+                                        ${medecin.email ? `<div><i class="fas fa-envelope"></i> ${medecin.email}</div>` : ''}
+                                    </td>
+                                    <td>
+                                        ${medecin.adresse ? 
+                                            (medecin.adresse.length > 50 ? medecin.adresse.substring(0, 50) + '...' : medecin.adresse) : 
+                                            '<span class="text-muted">Non spécifiée</span>'}
+                                    </td>
+                                    <td>
+                                        <div class="actions">
+                                            <button class="btn btn-primary btn-action" onclick="editMedecin(${medecin.id})" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-success btn-action" onclick="viewSchedule(${medecin.id})" title="Voir agenda">
+                                                <i class="fas fa-calendar"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-action" onclick="deleteMedecin(${medecin.id}, '${medecin.nom}')" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Rechercher des médecins
+        function searchMedecins() {
+            const searchTerm = document.getElementById('searchInput').value;
+            loadMedecins(searchTerm);
+        }
+
+        // Afficher le modal d'ajout de médecin
+        function showAddMedecinModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Nouveau médecin';
+            document.getElementById('medecinForm').reset();
+            document.getElementById('medecinId').value = '';
+            document.getElementById('mot_de_passe').required = true;
+            document.getElementById('medecinModal').classList.add('show');
+        }
+
+        // Modifier un médecin
+        function editMedecin(medecinId) {
+            const medecin = medecins.find(m => m.id === medecinId);
+            if (!medecin) return;
+            
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Modifier le médecin';
+            document.getElementById('medecinId').value = medecin.id;
+            document.getElementById('nom').value = medecin.nom;
+            document.getElementById('email').value = medecin.email;
+            document.getElementById('specialite').value = medecin.specialite || '';
+            document.getElementById('telephone').value = medecin.telephone || '';
+            document.getElementById('adresse').value = medecin.adresse || '';
+            document.getElementById('mot_de_passe').value = '';
+            document.getElementById('mot_de_passe').required = false;
+            
+            document.getElementById('medecinModal').classList.add('show');
+        }
+
+        // Fermer le modal médecin
+        function closeMedecinModal() {
+            document.getElementById('medecinModal').classList.remove('show');
+        }
+
+        // Enregistrer un médecin
+        async function saveMedecin() {
+            const medecinId = document.getElementById('medecinId').value;
+            const formData = {
+                nom: document.getElementById('nom').value,
+                email: document.getElementById('email').value,
+                specialite: document.getElementById('specialite').value,
+                telephone: document.getElementById('telephone').value,
+                adresse: document.getElementById('adresse').value
+            };
+            
+            // Ajouter le mot de passe seulement s'il est fourni
+            const password = document.getElementById('mot_de_passe').value;
+            if (password) {
+                formData.mot_de_passe = password;
+            }
+            
+            try {
+                const url = medecinId ? `/api/medecins/${medecinId}` : '/api/medecins';
+                const method = medecinId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-ID': sessionId
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    closeMedecinModal();
+                    loadMedecins();
+                    showAlert(medecinId ? 'Médecin modifié avec succès' : 'Médecin ajouté avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de l\'enregistrement', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Supprimer un médecin
+        function deleteMedecin(medecinId, medecinName) {
+            deleteMedecinId = medecinId;
+            document.getElementById('deleteMedecinName').textContent = medecinName;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        // Confirmer la suppression
+        async function confirmDeleteMedecin() {
+            try {
+                const response = await fetch(`/api/medecins/${deleteMedecinId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (response.ok) {
+                    closeDeleteModal();
+                    loadMedecins();
+                    showAlert('Médecin supprimé avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Fermer le modal de suppression
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteMedecinId = null;
+        }
+
+        // Voir l'agenda du médecin
+        function viewSchedule(medecinId) {
+            window.location.href = `/rendezvous.html?medecin_id=${medecinId}`;
+        }
+
+        // Afficher une alerte
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fade-in`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.page-header'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Déconnexion
+        async function logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+            } catch (error) {
+                // Ignorer les erreurs de déconnexion
+            }
+            
+            localStorage.removeItem('medicare_session');
+            window.location.href = '/';
+        }
+
+        // Initialisation
+        checkAuth();
+    </script>
+</body>
+</html>

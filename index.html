@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare - Connexion</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            margin: 20px;
+        }
+        
+        .login-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-body {
+            padding: 2rem;
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-logo i {
+            font-size: 3rem;
+            color: var(--danger-color);
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark-color);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .input-icon {
+            position: relative;
+        }
+        
+        .input-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-color);
+        }
+        
+        .input-icon .form-control {
+            padding-left: 45px;
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+            display: none;
+        }
+        
+        .alert-error {
+            background-color: #fee;
+            color: #c33;
+            border-color: #c33;
+        }
+        
+        .demo-info {
+            background-color: #e8f4fd;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .demo-info h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .demo-info p {
+            margin: 0.25rem 0;
+            color: var(--dark-color);
+        }
+        
+        .demo-info strong {
+            color: var(--secondary-color);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-heartbeat"></i> MediCare</h1>
+                <p>Plateforme de Gestion de Cabinet Médical</p>
+            </div>
+            
+            <div class="login-body">
+                <div class="login-logo">
+                    <i class="fas fa-user-md"></i>
+                    <h2>Connexion</h2>
+                </div>
+                
+                <div class="alert alert-error" id="errorAlert">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="errorMessage"></span>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <div class="input-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" class="form-control" 
+                                   placeholder="votre@email.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Mot de passe</label>
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" class="form-control" 
+                                   placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </button>
+                    
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        Connexion en cours...
+                    </div>
+                </form>
+                
+                <div class="demo-info">
+                    <h4><i class="fas fa-info-circle"></i> Comptes de démonstration</h4>
+                    <p><strong>Médecin:</strong> martin@medic.com / password</p>
+                    <p><strong>Secrétaire:</strong> secret@medic.com / password</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Gestion de la session
+        let sessionId = localStorage.getItem('medicare_session') || null;
+        
+        // Vérifier si l'utilisateur est déjà connecté
+        fetch('/api/user', {
+            headers: {
+                'X-Session-ID': sessionId
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.user) {
+                window.location.href = '/dashboard.html';
+            }
+        })
+        .catch(() => {
+            // Ignorer les erreurs de connexion
+        });
+        
+        // Gestion du formulaire de connexion
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            const loading = document.getElementById('loading');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Cacher les erreurs précédentes
+            errorAlert.style.display = 'none';
+            
+            // Afficher le chargement
+            loading.style.display = 'block';
+            loginBtn.disabled = true;
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-ID': sessionId
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Sauvegarder la session
+                    const newSessionId = response.headers.get('X-Session-ID');
+                    if (newSessionId) {
+                        localStorage.setItem('medicare_session', newSessionId);
+                    }
+                    
+                    // Rediriger vers le tableau de bord
+                    window.location.href = data.redirect;
+                } else {
+                    // Afficher l'erreur
+                    errorMessage.textContent = data.error;
+                    errorAlert.style.display = 'block';
+                }
+            } catch (error) {
+                errorMessage.textContent = 'Erreur de connexion au serveur';
+                errorAlert.style.display = 'block';
+            } finally {
+                // Cacher le chargement
+                loading.style.display = 'none';
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare - Tableau de bord</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dashboard-header {
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .specialite {
+            color: var(--gray-color);
+            font-style: italic;
+        }
+        
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+        
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: var(--light-color);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            margin: 0;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background: var(--light-color);
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-planifie {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .status-confirme {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .status-annule {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .status-passe {
+            background-color: var(--gray-color);
+            color: white;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            margin: 0 0.25rem;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .list-group {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .list-group-item {
+            border: 1px solid var(--light-color);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: var(--border-radius);
+            background: white;
+        }
+        
+        .d-flex {
+            display: flex;
+        }
+        
+        .justify-content-between {
+            justify-content: space-between;
+        }
+        
+        .align-items-center {
+            align-items: center;
+        }
+        
+        .d-grid {
+            display: grid;
+        }
+        
+        .gap-2 {
+            gap: 0.5rem;
+        }
+        
+        .text-muted {
+            color: var(--gray-color);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray-color);
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>MediCare</h1>
+                </div>
+                
+                <nav class="nav">
+                    <ul>
+                        <li><a href="/dashboard.html" class="nav-link active">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </a></li>
+                        <li><a href="/patients.html" class="nav-link">
+                            <i class="fas fa-users"></i> Patients
+                        </a></li>
+                        <li><a href="/rendezvous.html" class="nav-link">
+                            <i class="fas fa-calendar"></i> Rendez-vous
+                        </a></li>
+                        <li><a href="/consultations.html" class="nav-link">
+                            <i class="fas fa-stethoscope"></i> Consultations
+                        </a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Chargement...</span>
+                        <span class="user-role" id="userRole">Chargement...</span>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-logout" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Tableau de bord</h1>
+                <p>Bienvenue, <span id="welcomeName">Chargement...</span>!</p>
+                <p class="specialite" id="userSpecialite"></p>
+            </div>
+
+            <!-- Statistiques principales -->
+            <div class="dashboard-stats" id="statsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Chargement des statistiques...
+                </div>
+            </div>
+
+            <div class="dashboard-content">
+                <!-- Rendez-vous récents -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-calendar"></i> 
+                            Rendez-vous récents
+                        </h3>
+                        <a href="/rendezvous.html" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Nouveau RDV
+                        </a>
+                    </div>
+                    <div class="card-body" id="appointmentsContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Chargement des rendez-vous...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div>
+                    <!-- Actions rapides -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-bolt"></i> Actions rapides
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="/patients.html" class="btn btn-outline-primary">
+                                    <i class="fas fa-user-plus"></i> Nouveau patient
+                                </a>
+                                <a href="/rendezvous.html" class="btn btn-outline-success">
+                                    <i class="fas fa-calendar-plus"></i> Nouveau RDV
+                                </a>
+                                <a href="/consultations.html" class="btn btn-outline-info">
+                                    <i class="fas fa-stethoscope"></i> Nouvelle consultation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Gestion de la session
+        let sessionId = localStorage.getItem('medicare_session') || null;
+        let currentUser = null;
+        
+        // Vérifier la connexion
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.user) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                currentUser = data.user;
+                updateUserInterface();
+                loadDashboardData();
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+        
+        // Mettre à jour l'interface utilisateur
+        function updateUserInterface() {
+            document.getElementById('userName').textContent = currentUser.nom;
+            document.getElementById('userRole').textContent = currentUser.role;
+            document.getElementById('welcomeName').textContent = currentUser.nom;
+            
+            if (currentUser.specialite) {
+                document.getElementById('userSpecialite').textContent = `Spécialité: ${currentUser.specialite}`;
+            }
+            
+            // Adapter le menu selon le rôle
+            const nav = document.querySelector('.nav ul');
+            if (currentUser.role === 'secretaire') {
+                // Cacher consultations pour les secrétaires
+                const consultLink = nav.querySelector('a[href="/consultations.html"]');
+                if (consultLink) consultLink.parentElement.style.display = 'none';
+            }
+        }
+        
+        // Charger les données du tableau de bord
+        async function loadDashboardData() {
+            await loadStats();
+            await loadAppointments();
+        }
+        
+        // Charger les statistiques
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/dashboard/stats', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                const stats = await response.json();
+                
+                const statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--secondary-color);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number">${stats.patients_total}</div>
+                        <div class="stat-label">Patients total</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--success-color);">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="stat-number">${stats.medecins_total}</div>
+                        <div class="stat-label">Médecins</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--warning-color);">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-number">${stats.rdv_aujourd_hui}</div>
+                        <div class="stat-label">RDV aujourd'hui</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="color: var(--danger-color);">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <div class="stat-number">${stats.consultations_mois}</div>
+                        <div class="stat-label">Consultations ce mois</div>
+                    </div>
+                `;
+                
+                document.getElementById('statsContainer').innerHTML = statsHTML;
+            } catch (error) {
+                document.getElementById('statsContainer').innerHTML = 
+                    '<div class="alert alert-error">Erreur de chargement des statistiques</div>';
+            }
+        }
+        
+        // Charger les rendez-vous récents
+        async function loadAppointments() {
+            try {
+                const response = await fetch('/api/rendezvous', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                const appointments = await response.json();
+                
+                if (appointments.length === 0) {
+                    document.getElementById('appointmentsContainer').innerHTML = 
+                        '<p class="text-muted">Aucun rendez-vous récent.</p>';
+                    return;
+                }
+                
+                const appointmentsHTML = `
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Patient</th>
+                                    <th>Médecin</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${appointments.map(appointment => `
+                                    <tr>
+                                        <td>${formatDate(appointment.date_heure)}</td>
+                                        <td>
+                                            ${appointment.patient_nom} ${appointment.patient_prenom}
+                                        </td>
+                                        <td>
+                                            ${appointment.medecin_nom}
+                                            ${appointment.specialite ? `<br><small class="text-muted">${appointment.specialite}</small>` : ''}
+                                        </td>
+                                        <td>
+                                            <span class="badge status-${appointment.statut}">
+                                                ${getStatusLabel(appointment.statut)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="actions">
+                                                ${currentUser.role === 'medecin' && appointment.statut === 'planifie' ? 
+                                                    `<a href="/consultations.html?rdv_id=${appointment.id}" class="btn btn-success btn-action" title="Consulter">
+                                                        <i class="fas fa-stethoscope"></i>
+                                                    </a>` : ''}
+                                                <a href="/rendezvous.html?edit=${appointment.id}" class="btn btn-primary btn-action" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                
+                document.getElementById('appointmentsContainer').innerHTML = appointmentsHTML;
+            } catch (error) {
+                document.getElementById('appointmentsContainer').innerHTML = 
+                    '<div class="alert alert-error">Erreur de chargement des rendez-vous</div>';
+            }
+        }
+        
+        // Formater la date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Obtenir le libellé du statut
+        function getStatusLabel(status) {
+            const labels = {
+                'planifie': 'Planifié',
+                'confirme': 'Confirmé',
+                'annule': 'Annulé',
+                'passe': 'Passé'
+            };
+            return labels[status] || status;
+        }
+        
+        // Déconnexion
+        async function logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+            } catch (error) {
+                // Ignorer les erreurs de déconnexion
+            }
+            
+            localStorage.removeItem('medicare_session');
+            window.location.href = '/';
+        }
+        
+        // Initialisation
+        checkAuth();
+    </script>
+</body>
+</html>

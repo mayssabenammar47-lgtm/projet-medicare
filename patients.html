@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare - Patients</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>MediCare</h1>
+                </div>
+                
+                <nav class="nav">
+                    <ul>
+                        <li><a href="/dashboard.html" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </a></li>
+                        <li><a href="/patients.html" class="nav-link active">
+                            <i class="fas fa-users"></i> Patients
+                        </a></li>
+                        <li><a href="/rendezvous.html" class="nav-link">
+                            <i class="fas fa-calendar"></i> Rendez-vous
+                        </a></li>
+                        <li><a href="/consultations.html" class="nav-link">
+                            <i class="fas fa-stethoscope"></i> Consultations
+                        </a></li>
+                        <li><a href="/medecins.html" class="nav-link">
+                            <i class="fas fa-user-md"></i> Médecins
+                        </a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Chargement...</span>
+                        <span class="user-role" id="userRole">Chargement...</span>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-logout" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1><i class="fas fa-users"></i> Gestion des patients</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="showAddPatientModal()">
+                        <i class="fas fa-plus"></i> Nouveau patient
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtres et recherche -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="search-form">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" 
+                                       placeholder="Rechercher par nom, prénom, email..." 
+                                       onkeyup="searchPatients()">
+                                <button class="btn btn-secondary" onclick="searchPatients()">
+                                    <i class="fas fa-search"></i> Rechercher
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des patients -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i> 
+                        Liste des patients 
+                        <span class="badge badge-primary" id="patientCount">0</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="patientsContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Chargement des patients...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal d'ajout/modification de patient -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-user-plus"></i> Nouveau patient
+                </h3>
+                <button class="modal-close" onclick="closePatientModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="patientForm">
+                    <input type="hidden" id="patientId">
+                    
+                    <div class="form-group">
+                        <label for="nom" class="form-label">Nom *</label>
+                        <input type="text" id="nom" name="nom" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prenom" class="form-label">Prénom *</label>
+                        <input type="text" id="prenom" name="prenom" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date_naissance" class="form-label">Date de naissance</label>
+                        <input type="date" id="date_naissance" name="date_naissance" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telephone" class="form-label">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adresse" class="form-label">Adresse</label>
+                        <textarea id="adresse" name="adresse" class="form-control" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePatientModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="savePatient()">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i> Confirmation de suppression
+                </h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer le patient <strong id="deletePatientName"></strong> ?</p>
+                <p class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Cette action est irréversible.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDeletePatient()">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion de la session
+        let sessionId = localStorage.getItem('medicare_session') || null;
+        let patients = [];
+        let deletePatientId = null;
+
+        // Vérifier la connexion
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.user) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                updateUserInterface(data.user);
+                loadPatients();
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Mettre à jour l'interface utilisateur
+        function updateUserInterface(user) {
+            document.getElementById('userName').textContent = user.nom;
+            document.getElementById('userRole').textContent = user.role;
+        }
+
+        // Charger les patients
+        async function loadPatients(search = '') {
+            try {
+                const response = await fetch(`/api/patients${search ? '?search=' + encodeURIComponent(search) : ''}`, {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                patients = await response.json();
+                displayPatients(patients);
+            } catch (error) {
+                document.getElementById('patientsContainer').innerHTML = 
+                    '<div class="alert alert-error">Erreur de chargement des patients</div>';
+            }
+        }
+
+        // Afficher les patients
+        function displayPatients(patientsList) {
+            const container = document.getElementById('patientsContainer');
+            document.getElementById('patientCount').textContent = patientsList.length;
+            
+            if (patientsList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center" style="padding: 3rem;">
+                        <i class="fas fa-users-slash" style="font-size: 4rem; color: var(--gray-color); margin-bottom: 1rem;"></i>
+                        <h4>Aucun patient trouvé</h4>
+                        <p style="color: var(--gray-color);">Commencez par ajouter un nouveau patient.</p>
+                        <button class="btn btn-primary" onclick="showAddPatientModal()">
+                            <i class="fas fa-plus"></i> Ajouter un patient
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = `
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Contact</th>
+                                <th>Date de naissance</th>
+                                <th>Adresse</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${patientsList.map(patient => `
+                                <tr>
+                                    <td>
+                                        <strong>${patient.nom} ${patient.prenom}</strong>
+                                    </td>
+                                    <td>
+                                        ${patient.email ? `<div><i class="fas fa-envelope"></i> ${patient.email}</div>` : ''}
+                                        ${patient.telephone ? `<div><i class="fas fa-phone"></i> ${patient.telephone}</div>` : ''}
+                                    </td>
+                                    <td>
+                                        ${patient.date_naissance ? 
+                                            formatDate(patient.date_naissance) + ' (' + calculateAge(patient.date_naissance) + ' ans)' : 
+                                            '<span class="text-muted">Non spécifiée</span>'}
+                                    </td>
+                                    <td>
+                                        ${patient.adresse ? 
+                                            (patient.adresse.length > 50 ? patient.adresse.substring(0, 50) + '...' : patient.adresse) : 
+                                            '<span class="text-muted">Non spécifiée</span>'}
+                                    </td>
+                                    <td>
+                                        <div class="actions">
+                                            <button class="btn btn-primary btn-action" onclick="editPatient(${patient.id})" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-success btn-action" onclick="takeAppointment(${patient.id})" title="Prendre RDV">
+                                                <i class="fas fa-calendar-plus"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-action" onclick="deletePatient(${patient.id}, '${patient.nom} ${patient.prenom}')" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Rechercher des patients
+        function searchPatients() {
+            const searchTerm = document.getElementById('searchInput').value;
+            loadPatients(searchTerm);
+        }
+
+        // Afficher le modal d'ajout de patient
+        function showAddPatientModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-plus"></i> Nouveau patient';
+            document.getElementById('patientForm').reset();
+            document.getElementById('patientId').value = '';
+            document.getElementById('patientModal').classList.add('show');
+        }
+
+        // Modifier un patient
+        function editPatient(patientId) {
+            const patient = patients.find(p => p.id === patientId);
+            if (!patient) return;
+            
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Modifier le patient';
+            document.getElementById('patientId').value = patient.id;
+            document.getElementById('nom').value = patient.nom;
+            document.getElementById('prenom').value = patient.prenom;
+            document.getElementById('date_naissance').value = patient.date_naissance || '';
+            document.getElementById('telephone').value = patient.telephone || '';
+            document.getElementById('email').value = patient.email || '';
+            document.getElementById('adresse').value = patient.adresse || '';
+            
+            document.getElementById('patientModal').classList.add('show');
+        }
+
+        // Fermer le modal patient
+        function closePatientModal() {
+            document.getElementById('patientModal').classList.remove('show');
+        }
+
+        // Enregistrer un patient
+        async function savePatient() {
+            const patientId = document.getElementById('patientId').value;
+            const formData = {
+                nom: document.getElementById('nom').value,
+                prenom: document.getElementById('prenom').value,
+                date_naissance: document.getElementById('date_naissance').value,
+                telephone: document.getElementById('telephone').value,
+                email: document.getElementById('email').value,
+                adresse: document.getElementById('adresse').value
+            };
+            
+            try {
+                const url = patientId ? `/api/patients/${patientId}` : '/api/patients';
+                const method = patientId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-ID': sessionId
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    closePatientModal();
+                    loadPatients();
+                    showAlert(patientId ? 'Patient modifié avec succès' : 'Patient ajouté avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de l\'enregistrement', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Supprimer un patient
+        function deletePatient(patientId, patientName) {
+            deletePatientId = patientId;
+            document.getElementById('deletePatientName').textContent = patientName;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        // Confirmer la suppression
+        async function confirmDeletePatient() {
+            try {
+                const response = await fetch(`/api/patients/${deletePatientId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (response.ok) {
+                    closeDeleteModal();
+                    loadPatients();
+                    showAlert('Patient supprimé avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Fermer le modal de suppression
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deletePatientId = null;
+        }
+
+        // Prendre rendez-vous
+        function takeAppointment(patientId) {
+            window.location.href = `/rendezvous.html?patient_id=${patientId}`;
+        }
+
+        // Formater la date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR');
+        }
+
+        // Calculer l'âge
+        function calculateAge(dateString) {
+            const birthDate = new Date(dateString);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        // Afficher une alerte
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fade-in`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.page-header'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Déconnexion
+        async function logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+            } catch (error) {
+                // Ignorer les erreurs de déconnexion
+            }
+            
+            localStorage.removeItem('medicare_session');
+            window.location.href = '/';
+        }
+
+        // Initialisation
+        checkAuth();
+    </script>
+</body>
+</html>

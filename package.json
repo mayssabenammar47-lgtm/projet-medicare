@@ -1,0 +1,16 @@
+{
+  "name": "projet-medicare",
+  "version": "1.0.0",
+  "description": "Une application web complète pour la gestion des cabinets médicaux, développée en PHP/MySQL avec une interface moderne et responsive.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "sqlite3": "^5.1.7"
+  }
+}

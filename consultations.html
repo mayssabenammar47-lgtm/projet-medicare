@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare - Consultations</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>MediCare</h1>
+                </div>
+                
+                <nav class="nav">
+                    <ul>
+                        <li><a href="/dashboard.html" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </a></li>
+                        <li><a href="/patients.html" class="nav-link">
+                            <i class="fas fa-users"></i> Patients
+                        </a></li>
+                        <li><a href="/rendezvous.html" class="nav-link">
+                            <i class="fas fa-calendar"></i> Rendez-vous
+                        </a></li>
+                        <li><a href="/consultations.html" class="nav-link active">
+                            <i class="fas fa-stethoscope"></i> Consultations
+                        </a></li>
+                        <li><a href="/medecins.html" class="nav-link">
+                            <i class="fas fa-user-md"></i> Médecins
+                        </a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Chargement...</span>
+                        <span class="user-role" id="userRole">Chargement...</span>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-logout" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1><i class="fas fa-stethoscope"></i> Gestion des consultations</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="showAddConsultationModal()">
+                        <i class="fas fa-plus"></i> Nouvelle consultation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtres et recherche -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="search-form">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input type="text" id="searchInput" class="form-control" 
+                                       placeholder="Rechercher par patient, médecin, motif..." 
+                                       onkeyup="searchConsultations()">
+                                <button class="btn btn-secondary" onclick="searchConsultations()">
+                                    <i class="fas fa-search"></i> Rechercher
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des consultations -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i> 
+                        Liste des consultations 
+                        <span class="badge badge-primary" id="consultationCount">0</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="consultationsContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Chargement des consultations...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal d'ajout/modification de consultation -->
+    <div id="consultationModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-stethoscope"></i> Nouvelle consultation
+                </h3>
+                <button class="modal-close" onclick="closeConsultationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="consultationForm">
+                    <input type="hidden" id="consultationId">
+                    
+                    <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
+                        <div class="form-group">
+                            <label for="id_patient" class="form-label">Patient *</label>
+                            <select id="id_patient" name="id_patient" class="form-control" required>
+                                <option value="">Sélectionner un patient</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_medecin" class="form-label">Médecin *</label>
+                            <select id="id_medecin" name="id_medecin" class="form-control" required>
+                                <option value="">Sélectionner un médecin</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date_heure" class="form-label">Date et heure *</label>
+                        <input type="datetime-local" id="date_heure" name="date_heure" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="motif" class="form-label">Motif de la consultation</label>
+                        <textarea id="motif" name="motif" class="form-control" rows="3" 
+                                  placeholder="Motif principal de la consultation..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="diagnostic" class="form-label">Diagnostic</label>
+                        <textarea id="diagnostic" name="diagnostic" class="form-control" rows="4" 
+                                  placeholder="Diagnostic posé lors de la consultation..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="observations" class="form-label">Observations</label>
+                        <textarea id="observations" name="observations" class="form-control" rows="3" 
+                                  placeholder="Observations supplémentaires..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="medicaments" class="form-label">Médicaments prescrits</label>
+                        <div id="medicamentsContainer">
+                            <div class="medicament-item d-flex gap-2 mb-2">
+                                <select name="medicament_id[]" class="form-control">
+                                    <option value="">Sélectionner un médicament</option>
+                                </select>
+                                <input type="text" name="posologie[]" class="form-control" placeholder="Posologie">
+                                <button type="button" class="btn btn-success" onclick="addMedicamentField()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConsultationModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveConsultation()">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i> Confirmation de suppression
+                </h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer cette consultation ?</p>
+                <p class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Cette action est irréversible.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDeleteConsultation()">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion de la session
+        let sessionId = localStorage.getItem('medicare_session') || null;
+        let consultations = [];
+        let patients = [];
+        let medecins = [];
+        let medicaments = [];
+        let deleteConsultationId = null;
+
+        // Vérifier la connexion
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.user) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                updateUserInterface(data.user);
+                loadInitialData();
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Mettre à jour l'interface utilisateur
+        function updateUserInterface(user) {
+            document.getElementById('userName').textContent = user.nom;
+            document.getElementById('userRole').textContent = user.role;
+        }
+
+        // Charger les données initiales
+        async function loadInitialData() {
+            await Promise.all([
+                loadPatients(),
+                loadMedecins(),
+                loadMedicaments(),
+                loadConsultations()
+            ]);
+        }
+
+        // Charger les patients
+        async function loadPatients() {
+            try {
+                const response = await fetch('/api/patients', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                patients = await response.json();
+                updatePatientSelect();
+            } catch (error) {
+                console.error('Erreur de chargement des patients:', error);
+            }
+        }
+
+        // Charger les médecins
+        async function loadMedecins() {
+            try {
+                const response = await fetch('/api/medecins', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                medecins = await response.json();
+                updateMedecinSelect();
+            } catch (error) {
+                console.error('Erreur de chargement des médecins:', error);
+            }
+        }
+
+        // Charger les médicaments
+        async function loadMedicaments() {
+            try {
+                const response = await fetch('/api/medicaments', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                medicaments = await response.json();
+                updateMedicamentSelect();
+            } catch (error) {
+                console.error('Erreur de chargement des médicaments:', error);
+            }
+        }
+
+        // Mettre à jour le select des patients
+        function updatePatientSelect() {
+            const select = document.getElementById('id_patient');
+            select.innerHTML = '<option value="">Sélectionner un patient</option>' +
+                patients.map(patient => 
+                    `<option value="${patient.id}">${patient.nom} ${patient.prenom}</option>`
+                ).join('');
+        }
+
+        // Mettre à jour le select des médecins
+        function updateMedecinSelect() {
+            const select = document.getElementById('id_medecin');
+            select.innerHTML = '<option value="">Sélectionner un médecin</option>' +
+                medecins.map(medecin => 
+                    `<option value="${medecin.id}">${medecin.nom} ${medecin.specialite ? '(' + medecin.specialite + ')' : ''}</option>`
+                ).join('');
+        }
+
+        // Mettre à jour le select des médicaments
+        function updateMedicamentSelect() {
+            const selects = document.querySelectorAll('select[name="medicament_id[]"]');
+            selects.forEach(select => {
+                select.innerHTML = '<option value="">Sélectionner un médicament</option>' +
+                    medicaments.map(med => 
+                        `<option value="${med.id}">${med.nom}</option>`
+                    ).join('');
+            });
+        }
+
+        // Charger les consultations
+        async function loadConsultations(search = '') {
+            try {
+                const response = await fetch(`/api/consultations${search ? '?search=' + encodeURIComponent(search) : ''}`, {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                consultations = await response.json();
+                displayConsultations(consultations);
+            } catch (error) {
+                document.getElementById('consultationsContainer').innerHTML = 
+                    '<div class="alert alert-error">Erreur de chargement des consultations</div>';
+            }
+        }
+
+        // Afficher les consultations
+        function displayConsultations(consultationsList) {
+            const container = document.getElementById('consultationsContainer');
+            document.getElementById('consultationCount').textContent = consultationsList.length;
+            
+            if (consultationsList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center" style="padding: 3rem;">
+                        <i class="fas fa-stethoscope" style="font-size: 4rem; color: var(--gray-color); margin-bottom: 1rem;"></i>
+                        <h4>Aucune consultation trouvée</h4>
+                        <p style="color: var(--gray-color);">Commencez par ajouter une nouvelle consultation.</p>
+                        <button class="btn btn-primary" onclick="showAddConsultationModal()">
+                            <i class="fas fa-plus"></i> Ajouter une consultation
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = `
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Patient</th>
+                                <th>Médecin</th>
+                                <th>Motif</th>
+                                <th>Diagnostic</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${consultationsList.map(consultation => `
+                                <tr>
+                                    <td>
+                                        <strong>${formatDate(consultation.date_heure)}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>${consultation.patient_nom} ${consultation.patient_prenom}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>${consultation.medecin_nom}</strong>
+                                        ${consultation.specialite ? `<br><small class="text-muted">${consultation.specialite}</small>` : ''}
+                                    </td>
+                                    <td>
+                                        ${consultation.motif ? 
+                                            (consultation.motif.length > 50 ? consultation.motif.substring(0, 50) + '...' : consultation.motif) : 
+                                            '<span class="text-muted">Non spécifié</span>'}
+                                    </td>
+                                    <td>
+                                        ${consultation.diagnostic ? 
+                                            (consultation.diagnostic.length > 50 ? consultation.diagnostic.substring(0, 50) + '...' : consultation.diagnostic) : 
+                                            '<span class="text-muted">Non spécifié</span>'}
+                                    </td>
+                                    <td>
+                                        <div class="actions">
+                                            <button class="btn btn-primary btn-action" onclick="editConsultation(${consultation.id})" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-info btn-action" onclick="viewConsultation(${consultation.id})" title="Voir détails">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-danger btn-action" onclick="deleteConsultation(${consultation.id})" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Rechercher des consultations
+        function searchConsultations() {
+            const searchTerm = document.getElementById('searchInput').value;
+            loadConsultations(searchTerm);
+        }
+
+        // Afficher le modal d'ajout de consultation
+        function showAddConsultationModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-stethoscope"></i> Nouvelle consultation';
+            document.getElementById('consultationForm').reset();
+            document.getElementById('consultationId').value = '';
+            
+            // Définir la date et heure par défaut à maintenant
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('date_heure').value = now.toISOString().slice(0, 16);
+            
+            document.getElementById('consultationModal').classList.add('show');
+        }
+
+        // Modifier une consultation
+        async function editConsultation(consultationId) {
+            const consultation = consultations.find(c => c.id === consultationId);
+            if (!consultation) return;
+            
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Modifier la consultation';
+            document.getElementById('consultationId').value = consultation.id;
+            document.getElementById('id_patient').value = consultation.id_patient;
+            document.getElementById('id_medecin').value = consultation.id_medecin;
+            
+            // Formater la date pour le input datetime-local
+            const date = new Date(consultation.date_heure);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            document.getElementById('date_heure').value = date.toISOString().slice(0, 16);
+            
+            document.getElementById('motif').value = consultation.motif || '';
+            document.getElementById('diagnostic').value = consultation.diagnostic || '';
+            document.getElementById('observations').value = consultation.observations || '';
+            
+            document.getElementById('consultationModal').classList.add('show');
+        }
+
+        // Fermer le modal consultation
+        function closeConsultationModal() {
+            document.getElementById('consultationModal').classList.remove('show');
+        }
+
+        // Ajouter un champ médicament
+        function addMedicamentField() {
+            const container = document.getElementById('medicamentsContainer');
+            const newField = document.createElement('div');
+            newField.className = 'medicament-item d-flex gap-2 mb-2';
+            newField.innerHTML = `
+                <select name="medicament_id[]" class="form-control">
+                    <option value="">Sélectionner un médicament</option>
+                    ${medicaments.map(med => 
+                        `<option value="${med.id}">${med.nom}</option>`
+                    ).join('')}
+                </select>
+                <input type="text" name="posologie[]" class="form-control" placeholder="Posologie">
+                <button type="button" class="btn btn-danger" onclick="removeMedicamentField(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            container.appendChild(newField);
+        }
+
+        // Supprimer un champ médicament
+        function removeMedicamentField(button) {
+            button.parentElement.remove();
+        }
+
+        // Enregistrer une consultation
+        async function saveConsultation() {
+            const consultationId = document.getElementById('consultationId').value;
+            const formData = {
+                id_patient: document.getElementById('id_patient').value,
+                id_medecin: document.getElementById('id_medecin').value,
+                date_heure: document.getElementById('date_heure').value,
+                motif: document.getElementById('motif').value,
+                diagnostic: document.getElementById('diagnostic').value,
+                observations: document.getElementById('observations').value
+            };
+            
+            // Récupérer les médicaments
+            const medicamentIds = document.querySelectorAll('select[name="medicament_id[]"]');
+            const posologies = document.querySelectorAll('input[name="posologie[]"]');
+            const medicamentsData = [];
+            
+            for (let i = 0; i < medicamentIds.length; i++) {
+                if (medicamentIds[i].value && posologies[i].value) {
+                    medicamentsData.push({
+                        id_medicament: medicamentIds[i].value,
+                        posologie: posologies[i].value
+                    });
+                }
+            }
+            
+            formData.medicaments = medicamentsData;
+            
+            try {
+                const url = consultationId ? `/api/consultations/${consultationId}` : '/api/consultations';
+                const method = consultationId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-ID': sessionId
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    closeConsultationModal();
+                    loadConsultations();
+                    showAlert(consultationId ? 'Consultation modifiée avec succès' : 'Consultation ajoutée avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de l\'enregistrement', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Voir les détails d'une consultation
+        function viewConsultation(consultationId) {
+            const consultation = consultations.find(c => c.id === consultationId);
+            if (!consultation) return;
+            
+            let detailsHtml = `
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <h4>Détails de la consultation</h4>
+                    <p><strong>Date:</strong> ${formatDate(consultation.date_heure)}</p>
+                    <p><strong>Patient:</strong> ${consultation.patient_nom} ${consultation.patient_prenom}</p>
+                    <p><strong>Médecin:</strong> ${consultation.medecin_nom} ${consultation.specialite ? '(' + consultation.specialite + ')' : ''}</p>
+            `;
+            
+            if (consultation.motif) {
+                detailsHtml += `<p><strong>Motif:</strong> ${consultation.motif}</p>`;
+            }
+            
+            if (consultation.diagnostic) {
+                detailsHtml += `<p><strong>Diagnostic:</strong> ${consultation.diagnostic}</p>`;
+            }
+            
+            if (consultation.observations) {
+                detailsHtml += `<p><strong>Observations:</strong> ${consultation.observations}</p>`;
+            }
+            
+            detailsHtml += '</div>';
+            
+            showModal('Détails de la consultation', detailsHtml);
+        }
+
+        // Supprimer une consultation
+        function deleteConsultation(consultationId) {
+            deleteConsultationId = consultationId;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        // Confirmer la suppression
+        async function confirmDeleteConsultation() {
+            try {
+                const response = await fetch(`/api/consultations/${deleteConsultationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (response.ok) {
+                    closeDeleteModal();
+                    loadConsultations();
+                    showAlert('Consultation supprimée avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Fermer le modal de suppression
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteConsultationId = null;
+        }
+
+        // Afficher un modal générique
+        function showModal(title, content) {
+            const modalHtml = `
+                <div id="genericModal" class="modal show">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>${title}</h3>
+                            <button class="modal-close" onclick="closeGenericModal()">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            ${content}
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" onclick="closeGenericModal()">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // Fermer le modal générique
+        function closeGenericModal() {
+            const modal = document.getElementById('genericModal');
+            if (modal) modal.remove();
+        }
+
+        // Formater la date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Afficher une alerte
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fade-in`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.page-header'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Déconnexion
+        async function logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+            } catch (error) {
+                // Ignorer les erreurs de déconnexion
+            }
+            
+            localStorage.removeItem('medicare_session');
+            window.location.href = '/';
+        }
+
+        // Initialisation
+        checkAuth();
+    </script>
+</body>
+</html>

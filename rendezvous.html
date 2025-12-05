@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediCare - Rendez-vous</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>MediCare</h1>
+                </div>
+                
+                <nav class="nav">
+                    <ul>
+                        <li><a href="/dashboard.html" class="nav-link">
+                            <i class="fas fa-tachometer-alt"></i> Tableau de bord
+                        </a></li>
+                        <li><a href="/patients.html" class="nav-link">
+                            <i class="fas fa-users"></i> Patients
+                        </a></li>
+                        <li><a href="/rendezvous.html" class="nav-link active">
+                            <i class="fas fa-calendar"></i> Rendez-vous
+                        </a></li>
+                        <li><a href="/consultations.html" class="nav-link">
+                            <i class="fas fa-stethoscope"></i> Consultations
+                        </a></li>
+                        <li><a href="/medecins.html" class="nav-link">
+                            <i class="fas fa-user-md"></i> Médecins
+                        </a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-menu">
+                    <div class="user-info">
+                        <span class="user-name" id="userName">Chargement...</span>
+                        <span class="user-role" id="userRole">Chargement...</span>
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-logout" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main">
+        <div class="container">
+            <div class="page-header">
+                <h1><i class="fas fa-calendar"></i> Gestion des rendez-vous</h1>
+                <div class="page-actions">
+                    <button class="btn btn-primary" onclick="showAddRdvModal()">
+                        <i class="fas fa-plus"></i> Nouveau rendez-vous
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtres et recherche -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="search-form">
+                        <div class="d-grid" style="grid-template-columns: 1fr auto auto; gap: var(--spacing-lg);">
+                            <div class="form-group mb-0">
+                                <input type="text" id="searchInput" class="form-control" 
+                                       placeholder="Rechercher par patient, médecin..." 
+                                       onkeyup="searchRendezvous()">
+                            </div>
+                            <div class="form-group mb-0">
+                                <select id="statusFilter" class="form-control" onchange="searchRendezvous()">
+                                    <option value="">Tous les statuts</option>
+                                    <option value="planifie">Planifié</option>
+                                    <option value="confirme">Confirmé</option>
+                                    <option value="annule">Annulé</option>
+                                    <option value="passe">Passé</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="searchRendezvous()">
+                                <i class="fas fa-search"></i> Rechercher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Liste des rendez-vous -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-list"></i> 
+                        Liste des rendez-vous 
+                        <span class="badge badge-primary" id="rdvCount">0</span>
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="rendezvousContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Chargement des rendez-vous...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal d'ajout/modification de rendez-vous -->
+    <div id="rdvModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">
+                    <i class="fas fa-calendar-plus"></i> Nouveau rendez-vous
+                </h3>
+                <button class="modal-close" onclick="closeRdvModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="rdvForm">
+                    <input type="hidden" id="rdvId">
+                    
+                    <div class="form-group">
+                        <label for="id_patient" class="form-label">Patient *</label>
+                        <select id="id_patient" name="id_patient" class="form-control" required>
+                            <option value="">Sélectionner un patient</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_medecin" class="form-label">Médecin *</label>
+                        <select id="id_medecin" name="id_medecin" class="form-control" required>
+                            <option value="">Sélectionner un médecin</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="date_heure" class="form-label">Date et heure *</label>
+                        <input type="datetime-local" id="date_heure" name="date_heure" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statut" class="form-label">Statut</label>
+                        <select id="statut" name="statut" class="form-control">
+                            <option value="planifie">Planifié</option>
+                            <option value="confirme">Confirmé</option>
+                            <option value="annule">Annulé</option>
+                            <option value="passe">Passé</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea id="notes" name="notes" class="form-control" rows="3" 
+                                  placeholder="Notes supplémentaires..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeRdvModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveRdv()">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation de suppression -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i> Confirmation de suppression
+                </h3>
+                <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Êtes-vous sûr de vouloir supprimer ce rendez-vous ?</p>
+                <p class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Cette action est irréversible.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDeleteRdv()">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gestion de la session
+        let sessionId = localStorage.getItem('medicare_session') || null;
+        let rendezvous = [];
+        let patients = [];
+        let medecins = [];
+        let deleteRdvId = null;
+
+        // Vérifier la connexion
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.user) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                updateUserInterface(data.user);
+                loadInitialData();
+                
+                // Vérifier s'il y a des paramètres dans l'URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const patientId = urlParams.get('patient_id');
+                const medecinId = urlParams.get('medecin_id');
+                
+                if (patientId || medecinId) {
+                    setTimeout(() => {
+                        showAddRdvModal(patientId, medecinId);
+                    }, 500);
+                }
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+
+        // Mettre à jour l'interface utilisateur
+        function updateUserInterface(user) {
+            document.getElementById('userName').textContent = user.nom;
+            document.getElementById('userRole').textContent = user.role;
+        }
+
+        // Charger les données initiales
+        async function loadInitialData() {
+            await Promise.all([
+                loadPatients(),
+                loadMedecins(),
+                loadRendezvous()
+            ]);
+        }
+
+        // Charger les patients
+        async function loadPatients() {
+            try {
+                const response = await fetch('/api/patients', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                patients = await response.json();
+                updatePatientSelect();
+            } catch (error) {
+                console.error('Erreur de chargement des patients:', error);
+            }
+        }
+
+        // Charger les médecins
+        async function loadMedecins() {
+            try {
+                const response = await fetch('/api/medecins', {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                medecins = await response.json();
+                updateMedecinSelect();
+            } catch (error) {
+                console.error('Erreur de chargement des médecins:', error);
+            }
+        }
+
+        // Mettre à jour le select des patients
+        function updatePatientSelect() {
+            const select = document.getElementById('id_patient');
+            select.innerHTML = '<option value="">Sélectionner un patient</option>' +
+                patients.map(patient => 
+                    `<option value="${patient.id}">${patient.nom} ${patient.prenom}</option>`
+                ).join('');
+        }
+
+        // Mettre à jour le select des médecins
+        function updateMedecinSelect() {
+            const select = document.getElementById('id_medecin');
+            select.innerHTML = '<option value="">Sélectionner un médecin</option>' +
+                medecins.map(medecin => 
+                    `<option value="${medecin.id}">${medecin.nom} ${medecin.specialite ? '(' + medecin.specialite + ')' : ''}</option>`
+                ).join('');
+        }
+
+        // Charger les rendez-vous
+        async function loadRendezvous(search = '', status = '') {
+            try {
+                let url = '/api/rendezvous';
+                const params = new URLSearchParams();
+                
+                if (search) params.append('search', search);
+                if (status) params.append('status', status);
+                
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                rendezvous = await response.json();
+                displayRendezvous(rendezvous);
+            } catch (error) {
+                document.getElementById('rendezvousContainer').innerHTML = 
+                    '<div class="alert alert-error">Erreur de chargement des rendez-vous</div>';
+            }
+        }
+
+        // Afficher les rendez-vous
+        function displayRendezvous(rdvList) {
+            const container = document.getElementById('rendezvousContainer');
+            document.getElementById('rdvCount').textContent = rdvList.length;
+            
+            if (rdvList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center" style="padding: 3rem;">
+                        <i class="fas fa-calendar-times" style="font-size: 4rem; color: var(--gray-color); margin-bottom: 1rem;"></i>
+                        <h4>Aucun rendez-vous trouvé</h4>
+                        <p style="color: var(--gray-color);">Commencez par ajouter un nouveau rendez-vous.</p>
+                        <button class="btn btn-primary" onclick="showAddRdvModal()">
+                            <i class="fas fa-plus"></i> Ajouter un rendez-vous
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = `
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date et heure</th>
+                                <th>Patient</th>
+                                <th>Médecin</th>
+                                <th>Statut</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rdvList.map(rdv => `
+                                <tr>
+                                    <td>
+                                        <strong>${formatDate(rdv.date_heure)}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>${rdv.patient_nom} ${rdv.patient_prenom}</strong>
+                                    </td>
+                                    <td>
+                                        <strong>${rdv.medecin_nom}</strong>
+                                        ${rdv.specialite ? `<br><small class="text-muted">${rdv.specialite}</small>` : ''}
+                                    </td>
+                                    <td>
+                                        <span class="badge status-${rdv.statut}">
+                                            ${getStatusLabel(rdv.statut)}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        ${rdv.notes ? 
+                                            (rdv.notes.length > 30 ? rdv.notes.substring(0, 30) + '...' : rdv.notes) : 
+                                            '<span class="text-muted">Aucune note</span>'}
+                                    </td>
+                                    <td>
+                                        <div class="actions">
+                                            <button class="btn btn-primary btn-action" onclick="editRdv(${rdv.id})" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            ${rdv.statut === 'planifie' || rdv.statut === 'confirme' ? 
+                                                `<button class="btn btn-success btn-action" onclick="createConsultation(${rdv.id})" title="Créer consultation">
+                                                    <i class="fas fa-stethoscope"></i>
+                                                </button>` : ''}
+                                            <button class="btn btn-danger btn-action" onclick="deleteRdv(${rdv.id})" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Rechercher des rendez-vous
+        function searchRendezvous() {
+            const searchTerm = document.getElementById('searchInput').value;
+            const status = document.getElementById('statusFilter').value;
+            loadRendezvous(searchTerm, status);
+        }
+
+        // Afficher le modal d'ajout de rendez-vous
+        function showAddRdvModal(patientId = null, medecinId = null) {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-calendar-plus"></i> Nouveau rendez-vous';
+            document.getElementById('rdvForm').reset();
+            document.getElementById('rdvId').value = '';
+            
+            // Définir la date et heure par défaut à maintenant
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('date_heure').value = now.toISOString().slice(0, 16);
+            
+            // Pré-remplir si des paramètres sont fournis
+            if (patientId) {
+                document.getElementById('id_patient').value = patientId;
+            }
+            if (medecinId) {
+                document.getElementById('id_medecin').value = medecinId;
+            }
+            
+            document.getElementById('rdvModal').classList.add('show');
+        }
+
+        // Modifier un rendez-vous
+        function editRdv(rdvId) {
+            const rdv = rendezvous.find(r => r.id === rdvId);
+            if (!rdv) return;
+            
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Modifier le rendez-vous';
+            document.getElementById('rdvId').value = rdv.id;
+            document.getElementById('id_patient').value = rdv.id_patient;
+            document.getElementById('id_medecin').value = rdv.id_medecin;
+            
+            // Formater la date pour le input datetime-local
+            const date = new Date(rdv.date_heure);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            document.getElementById('date_heure').value = date.toISOString().slice(0, 16);
+            
+            document.getElementById('statut').value = rdv.statut;
+            document.getElementById('notes').value = rdv.notes || '';
+            
+            document.getElementById('rdvModal').classList.add('show');
+        }
+
+        // Fermer le modal rendez-vous
+        function closeRdvModal() {
+            document.getElementById('rdvModal').classList.remove('show');
+        }
+
+        // Enregistrer un rendez-vous
+        async function saveRdv() {
+            const rdvId = document.getElementById('rdvId').value;
+            const formData = {
+                id_patient: document.getElementById('id_patient').value,
+                id_medecin: document.getElementById('id_medecin').value,
+                date_heure: document.getElementById('date_heure').value,
+                statut: document.getElementById('statut').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            try {
+                const url = rdvId ? `/api/rendezvous/${rdvId}` : '/api/rendezvous';
+                const method = rdvId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Session-ID': sessionId
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    closeRdvModal();
+                    loadRendezvous();
+                    showAlert(rdvId ? 'Rendez-vous modifié avec succès' : 'Rendez-vous ajouté avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de l\'enregistrement', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Créer une consultation à partir d'un rendez-vous
+        function createConsultation(rdvId) {
+            window.location.href = `/consultations.html?rdv_id=${rdvId}`;
+        }
+
+        // Supprimer un rendez-vous
+        function deleteRdv(rdvId) {
+            deleteRdvId = rdvId;
+            document.getElementById('deleteModal').classList.add('show');
+        }
+
+        // Confirmer la suppression
+        async function confirmDeleteRdv() {
+            try {
+                const response = await fetch(`/api/rendezvous/${deleteRdvId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+                
+                if (response.ok) {
+                    closeDeleteModal();
+                    loadRendezvous();
+                    showAlert('Rendez-vous supprimé avec succès', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert(error.error || 'Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                showAlert('Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Fermer le modal de suppression
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('show');
+            deleteRdvId = null;
+        }
+
+        // Obtenir le libellé du statut
+        function getStatusLabel(status) {
+            const labels = {
+                'planifie': 'Planifié',
+                'confirme': 'Confirmé',
+                'annule': 'Annulé',
+                'passe': 'Passé'
+            };
+            return labels[status] || status;
+        }
+
+        // Formater la date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR') + ' ' + date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Afficher une alerte
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} fade-in`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.page-header'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Déconnexion
+        async function logout() {
+            try {
+                await fetch('/api/logout', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-ID': sessionId
+                    }
+                });
+            } catch (error) {
+                // Ignorer les erreurs de déconnexion
+            }
+            
+            localStorage.removeItem('medicare_session');
+            window.location.href = '/';
+        }
+
+        // Initialisation
+        checkAuth();
+    </script>
+</body>
+</html>
