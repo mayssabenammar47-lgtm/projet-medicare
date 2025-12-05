@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MediCare - Plateforme de Gestion de Cabinet Médical
 
 Une application web complète pour la gestion des cabinets médicaux, développée en PHP/MySQL avec une interface moderne et responsive.
@@ -257,3 +258,7 @@ Les contributions sont les bienvenues ! Merci de suivre les étapes :
 ---
 
 **Développé avec ❤️ pour les professionnels de santé**
+=======
+# projet-medicare
+projet bd medicare
+>>>>>>> 171b79a9c43c43fef14d6f5791fa9c7388821e56
