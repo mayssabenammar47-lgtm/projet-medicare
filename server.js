@@ -2,15 +2,30 @@ const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Configuration
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname)));
 
+// CORS headers
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, X-Session-ID');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
+
 // Configuration de la base de données SQLite
-const db = new sqlite3.Database('/home/mayssa/projet-medicare/medicare.db');
+const dbPath = process.env.NODE_ENV === 'production' 
+    ? '/app/data/medicare.db' 
+    : '/home/mayssa/projet-medicare/medicare.db';
+const db = new sqlite3.Database(dbPath);
 
 // Création des tables
 db.serialize(() => {

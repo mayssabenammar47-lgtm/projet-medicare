@@ -255,10 +255,4 @@ Les contributions sont les bienvenues ! Merci de suivre les étapes :
 4. Pousser vers la branche
 5. Créer une Pull Request
 
----
 
-**Développé avec ❤️ pour les professionnels de santé**
-=======
-# projet-medicare
-projet bd medicare
->>>>>>> 171b79a9c43c43fef14d6f5791fa9c7388821e56
